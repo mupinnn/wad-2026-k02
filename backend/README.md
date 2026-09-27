@@ -1,28 +1,25 @@
-# backend/ — sengaja kosong
+# backend/
 
-Kamu yang mengisi folder ini, mulai Sesi 2.
-
-Sesi 2, yang harus ada di sini sebelum kamu keluar:
+FastAPI untuk jadwal konsultasi pasien (Kelompok 02). Route konsultasi belum ada. Kontrak yang harus diikuti ada di [`docs/uts-consultation-contract.md`](../docs/uts-consultation-contract.md).
 
 ```
 backend/
-├── requirements.txt    # fastapi, uvicorn
+├── requirements.txt
 └── app/
     ├── __init__.py
-    └── main.py         # FastAPI() + GET /health -> 200 {"status": "ok"}
+    ├── main.py       # FastAPI, GET /health, CORS untuk http://localhost:5173
+    ├── data.py       # 12 jadwal fiktif
+    ├── schemas.py    # skema Pydantic — ditambah pemilik endpoint
+    └── services.py   # operasi data — ditambah pemilik endpoint
 ```
 
-Titik mulai:
+Jalankan dari folder ini:
 
 ```bash
-cd backend
 python -m venv venv
-source venv/bin/activate        # Windows: venv\Scripts\activate
-pip install fastapi uvicorn
-pip freeze > requirements.txt
+source venv/bin/activate
+pip install -r requirements.txt
 uvicorn app.main:app --reload
 ```
 
-`venv/` tidak di-commit — sudah diatur di `.gitignore`.
-
-Hapus berkas ini kalau sudah tidak perlu.
+`venv/` tidak di-commit.

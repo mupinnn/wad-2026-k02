@@ -73,11 +73,13 @@ SQLite, yang sudah menyatu dengan Python.
 
 | Layanan | Port lokal | Mulai dipakai | Catatan |
 |---|---|---|---|
-| Frontend (Vite + Vue 3) | `5173` | Sesi 2 | kamu yang membuat isi `frontend/` |
-| Backend (FastAPI + Uvicorn) | `8000` | Sesi 2 | kamu yang membuat isi `backend/` |
+| Frontend (Vite + Vue 3) | `5173` | Sesi 2 | kerangka shadcn-vue; fitur jadwal belum ada |
+| Backend (FastAPI + Uvicorn) | `8000` | Sesi 2 | `/health` dan CORS; route konsultasi belum ada |
 | Basis data | — | Sesi 3 | SQLite lokal; ganti ke Postgres (Neon) di Sesi 5 lewat `DATABASE_URL` |
 
 ## 3. Cara menjalankan
+
+Dua server harus jalan bersamaan. Backend di port `8000`, frontend di port `5173`.
 
 ```bash
 # sekali saja, setelah clone
@@ -126,12 +128,76 @@ Verifikasi manual yang juga dinilai:
 | Gejala | Sebab biasanya | Tindakan |
 |---|---|---|
 | `python` tidak dikenali (Windows) | PATH tidak dicentang saat install | pakai `py`, atau install ulang dan centang "Add Python to PATH" |
-| `npm run dev` jalan tapi halaman kosong | `index.html` tidak menunjuk `src/main.js` | cek `<script type="module" src="/src/main.js">` |
+| `npm run dev` jalan tapi halaman kosong | `index.html` tidak menunjuk `src/main.ts` | cek `<script type="module" src="/src/main.ts">` |
 | `/health` 404 | `app.main` bukan modul yang dijalankan | jalankan `uvicorn` dari dalam folder `backend/` |
 | CI merah karena `secret-scan` | ada rahasia ter-commit | **hapus nilainya, rotasi, commit ulang** — lihat Ketentuan 8 di bawah |
 | `venv/` ikut ter-commit | `.gitignore` diubah | kembalikan `.gitignore` bawaan repo |
 | Menu **Branches → Add rule** tidak ada | repo dibuat **Private** | Settings → General → Danger Zone → **Change visibility → Public** |
 | Tidak bisa merge PR sendiri | "Require approvals" sudah dinyalakan | matikan dulu malam ini (lihat bagian 0 langkah 4) |
+
+---
+
+## UTS — Kelompok 02
+
+Aplikasi ini mencatat **jadwal konsultasi pasien** di sebuah klinik. Kontrak yang dipakai saat mengimplementasikan ada di [`docs/uts-consultation-contract.md`](docs/uts-consultation-contract.md). Path-nya `/consultations`, bukan `/sessions`.
+
+`GET /health`, CORS untuk `http://localhost:5173`, dan 12 baris fiktif di `backend/app/data.py` sudah ada. Route konsultasi dan perilaku UI belum.
+
+### Alur aplikasi
+
+1. Petugas membuka aplikasi dan melihat daftar jadwal konsultasi.
+2. Layar punya empat keadaan: sedang memuat, ada data, tidak ada data, gagal dimuat. Gagal punya tombol coba lagi.
+3. Petugas mencari nama pasien atau dokter dan berpindah halaman (`skip` / `limit`).
+4. Petugas menambah jadwal lewat form. Form menolak isian yang tidak lengkap sebelum dikirim, dan menampilkan pesan error dari server.
+5. Petugas menghapus satu jadwal hanya setelah konfirmasi. Daftar dimuat ulang.
+6. Id yang tidak ada membalas 404. Itu diuji di `http://localhost:8000/docs`, bukan lewat halaman terpisah.
+
+Layar daftar dibagi dua berkas. Anggota 4 mengambil data dan memilih keadaan. Anggota 2 hanya merender prop `items`. Keduanya tidak mengedit komponen yang sama. Di `main.py`, `schemas.py`, dan `services.py`, tambahkan fungsi atau route baru dan jangan mengubah milik anggota lain.
+
+Anggota 2, 3, dan 4 bisa mulai bersamaan setelah pondasi ini. Tidak ada tugas yang harus selesai sebelum anggota lain mulai menulis.
+
+### Cara verifikasi requirement
+
+Jalankan kedua server seperti bagian 3, lalu cek satu per satu. Yang belum diimplementasikan memang masih gagal.
+
+| Kode | Cara cek | Status sekarang |
+|---|---|---|
+| B1 | `GET /consultations?skip=0&limit=5&search=sari` di `/docs`. Balasan array, terpotong halaman, dan `search` cocok ke nama pasien atau dokter tanpa memedulikan huruf besar. | Belum |
+| B2 | `GET /consultations/1` membalas 200. `GET /consultations/999` membalas 404 dengan `{"detail":"Jadwal konsultasi tidak ditemukan."}`. | Belum |
+| B3 | `POST /consultations` dengan body lengkap membalas 201 dan record yang punya `id`. Body tanpa `nama_pasien` membalas 422. Skema masuk tidak berisi `id`. | Belum |
+| B4 | `DELETE /consultations/1` membalas 204 dengan badan kosong. Id yang tidak ada membalas 404. | Belum |
+| B5 | Dari origin `http://localhost:5173`, response punya `Access-Control-Allow-Origin` itu. Origin lain tidak. | Sudah |
+| F1 | Buka `http://localhost:5173`. Daftar terisi dari API saat halaman dibuka, dan permintaan dibatalkan saat halaman ditutup. | Belum |
+| F2 | Throttle jaringan: terlihat loading. Data 12 baris: terlihat daftar. `search` yang tidak cocok: terlihat kosong. Backend dimatikan: terlihat error dan tombol coba lagi yang memuat ulang. | Belum |
+| F3 | Form kosong tidak terkirim, dan pesan validasi tampil. Error 422 dari server juga tampil di form. | Belum |
+| F4 | Hapus meminta konfirmasi. Setelah ya, daftar dimuat ulang tanpa jadwal itu. | Belum |
+| Q1 | Ada `header`, `main`, dan `h1`. Setiap input form punya `<label>`. | Kerangka halaman sudah; label menunggu form |
+| Q2 | Seluruh UI bisa dipakai dengan Tab dan Enter. Focus terlihat. | Belum |
+| Q3 | Console browser tidak punya error atau unhandled rejection saat alur di atas dijalankan. | Belum |
+| Q4 | Tidak ada berkas sumber lebih dari 100 baris. Komponen terpecah sesuai kontrak. | Belum |
+| Q5 | `git log` punya minimal tiga commit yang pesannya menjelaskan perubahan. Tiap anggota commit bagiannya sendiri. | Berjalan |
+
+### Pembagian tugas
+
+Anggota 1 memegang pondasi, jadi sisa tugas produknya kecil. Tiga anggota lain membagi fitur (19 / 19 / 20). Q5 dikerjakan bersama.
+
+**Anggota 1 — pondasi.** Kerangka backend dan frontend, kontrak termasuk prop komponen daftar, B5 CORS (2), 12 baris fiktif di `data.py`, dan Q1 (3): kerangka semantik sudah, `<label>` pada setiap input menyusul saat form ada.
+
+Blokir: label Q1 menunggu form Anggota 3 (F3). Aturan label sudah di kontrak, jadi Anggota 3 tidak menunggu Anggota 1. Setelah CORS, data, dan kontrak ada, Anggota 1 tidak memblokir siapa pun.
+
+**Anggota 2 — menelusuri jadwal (19).** B1 daftar + pagination + `search` (6). F1 komponen daftar dengan prop `items` saja, dirender dari data yang dimuat saat mount dan dibersihkan saat unmount (6). B2 detail 404 (4). Q2 bisa dioperasikan keyboard dan gaya focus terlihat di CSS global (3).
+
+Blokir: tidak ada yang menghalangi mulai. Kerjakan B1 dulu supaya barisnya terlihat. Pengecekan keyboard terakhir menunggu form Anggota 3 (F3) dan dialog hapus Anggota 4 (F4). Kamu memblokir integrasi keadaan data Anggota 4 sampai komponen daftar ada, dan memblokir cek keadaan kosong/data sampai B1 mengembalikan baris sungguhan. Kamu tidak memblokir mereka membangun loading, error, atau coba lagi.
+
+**Anggota 3 — menambah jadwal (19).** B3 buat jadwal, skema masuk dan keluar terpisah, 201 (9). F3 form, validasi klien, tampilan error server (7). Tiap input punya `<label>` sendiri; itu menyelesaikan Q1 Anggota 1. Q3 tidak ada error console dan unhandled rejection (3).
+
+Blokir: tidak ada yang menghalangi mulai. Tampilkan error server setelah B3 milikmu sendiri jalan. Pengecekan console terakhir menunggu daftar Anggota 2 serta keadaan dan dialog Anggota 4 ada di halaman. Formmu memblokir Anggota 1 menutup Q1, dan memblokir pengecekan keyboard terakhir Anggota 2.
+
+**Anggota 4 — keadaan layar dan membatalkan jadwal (20).** F2 loading, data, kosong, error, dan tombol coba lagi yang bekerja (11). Kamu yang memanggil API di halaman; keadaan data merender daftar Anggota 2. B4 hapus 204 (4). F4 konfirmasi hapus dan daftar dimuat ulang (3); muat ulang memanggil fungsi load milikmu sendiri. Q4 komponen terpecah, tidak ada berkas lebih dari 100 baris (2).
+
+Blokir: loading, error, coba lagi, hapus, dan dialog konfirmasi tidak menunggu siapa pun. Cek keadaan kosong dan data menunggu B1 (Anggota 2). Mengganti `<ul>` biasa dengan komponen Anggota 2 menunggu F1. Dialogmu memblokir pengecekan keyboard terakhir Anggota 2. Kamu tidak memblokir Anggota 2 atau Anggota 3 untuk mulai.
+
+**Semua anggota — Q5 (2).** Tiap orang commit bagiannya sendiri. Repo butuh minimal tiga commit yang pesannya bermakna. Ini tidak menunggu siapa pun.
 
 ---
 
@@ -201,7 +267,7 @@ nilainya 0.
 - Sesi 5 — GitHub Copilot, autocomplete pada model SQLAlchemy. Ditinjau dan diubah manual.
 -->
 
-- _(belum ada)_
+- Pondasi UTS Kelompok 02 (kerangka backend dan frontend, kontrak, CORS, 12 baris data) disusun dengan bantuan AI assistant sebelum Sesi 8. Route konsultasi dan UI fitur belum ditulis; itu tugas anggota sesuai bagian pembagian di bawah.
 
 ## Kalau kamu tersendat
 
