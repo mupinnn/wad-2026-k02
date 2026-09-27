@@ -90,10 +90,10 @@ Hanya origin `http://localhost:5173`. Origin lain tidak mendapat `Access-Control
 
 ## Layar daftar
 
-Supaya Anggota 2 dan Anggota 4 tidak mengedit komponen yang sama:
+Supaya @ghinaat dan @mohammadbaiqi tidak mengedit komponen yang sama:
 
-- Anggota 4 membuat halaman yang memanggil `GET /consultations`. Halaman itu yang memilih keadaan: `loading`, `error`, `empty` (berhasil dan nol baris), atau `data` (berhasil dan minimal satu baris). Permintaan dibatalkan saat halaman dilepas.
-- Anggota 2 membuat komponen daftar yang hanya menerima prop `items` (array konsultasi). Komponen itu tidak memanggil API.
+- @mohammadbaiqi membuat halaman yang memanggil `GET /consultations`. Halaman itu yang memilih keadaan: `loading`, `error`, `empty` (berhasil dan nol baris), atau `data` (berhasil dan minimal satu baris). Permintaan dibatalkan saat halaman dilepas.
+- @ghinaat membuat komponen daftar yang hanya menerima prop `items` (array konsultasi). Komponen itu tidak memanggil API.
 - Saat keadaan `data`, halaman merender komponen daftar itu. Sebelum berkas daftar ada, halaman boleh merender `<ul>` biasa, lalu diganti. Penggantian itu satu-satunya langkah integrasi.
 
 Setiap input pada form tambah punya elemen `<label>` sendiri yang menunjuk ke input itu. Jangan memakai placeholder sebagai pengganti label.
@@ -104,7 +104,7 @@ Nama ini supaya pekerjaan tidak bertabrakan. Belum dibuat.
 
 | Berkas | Pemilik | Isi |
 |---|---|---|
-| `frontend/src/components/ConsultationList.vue` | Anggota 2 | Daftar. Prop: `items` saja. |
-| `frontend/src/components/ConsultationPage.vue` | Anggota 4 | Fetch, empat keadaan, tombol coba lagi |
-| `frontend/src/components/ConsultationForm.vue` | Anggota 3 | Form tambah, validasi klien, error server, label |
-| `frontend/src/components/DeleteConsultationDialog.vue` | Anggota 4 | Konfirmasi hapus, lalu muat ulang daftar |
+| `frontend/src/components/ConsultationList.vue` | @ghinaat | Daftar. Prop: `items` saja. |
+| `frontend/src/components/ConsultationPage.vue` | @mohammadbaiqi | Fetch, empat keadaan, tombol coba lagi |
+| `frontend/src/components/ConsultationForm.vue` | @likicop | Form tambah, validasi klien, error server, label |
+| `frontend/src/components/DeleteConsultationDialog.vue` | @mohammadbaiqi | Konfirmasi hapus, lalu muat ulang daftar |

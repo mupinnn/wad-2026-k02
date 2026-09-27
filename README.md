@@ -152,9 +152,9 @@ Aplikasi ini mencatat **jadwal konsultasi pasien** di sebuah klinik. Kontrak yan
 5. Petugas menghapus satu jadwal hanya setelah konfirmasi. Daftar dimuat ulang.
 6. Id yang tidak ada membalas 404. Itu diuji di `http://localhost:8000/docs`, bukan lewat halaman terpisah.
 
-Layar daftar dibagi dua berkas. Anggota 4 mengambil data dan memilih keadaan. Anggota 2 hanya merender prop `items`. Keduanya tidak mengedit komponen yang sama. Di `main.py`, `schemas.py`, dan `services.py`, tambahkan fungsi atau route baru dan jangan mengubah milik anggota lain.
+Layar daftar dibagi dua berkas. @mohammadbaiqi mengambil data dan memilih keadaan. @ghinaat hanya merender prop `items`. Keduanya tidak mengedit komponen yang sama. Di `main.py`, `schemas.py`, dan `services.py`, tambahkan fungsi atau route baru dan jangan mengubah milik anggota lain.
 
-Anggota 2, 3, dan 4 bisa mulai bersamaan setelah pondasi ini. Tidak ada tugas yang harus selesai sebelum anggota lain mulai menulis.
+@ghinaat, @likicop, dan @mohammadbaiqi bisa mulai bersamaan setelah pondasi ini. Tidak ada tugas yang harus selesai sebelum anggota lain mulai menulis.
 
 ### Cara verifikasi requirement
 
@@ -179,23 +179,23 @@ Jalankan kedua server seperti bagian 3, lalu cek satu per satu. Yang belum diimp
 
 ### Pembagian tugas
 
-Anggota 1 memegang pondasi, jadi sisa tugas produknya kecil. Tiga anggota lain membagi fitur (19 / 19 / 20). Q5 dikerjakan bersama.
+@mupinnn memegang pondasi, jadi sisa tugas produknya kecil. Tiga anggota lain membagi fitur (19 / 19 / 20). Q5 dikerjakan bersama.
 
-**Anggota 1 — pondasi.** Kerangka backend dan frontend, kontrak termasuk prop komponen daftar, B5 CORS (2), 12 baris fiktif di `data.py`, dan Q1 (3): kerangka semantik sudah, `<label>` pada setiap input menyusul saat form ada.
+**@mupinnn — pondasi.** Kerangka backend dan frontend, kontrak termasuk prop komponen daftar, B5 CORS (2), 12 baris fiktif di `data.py`, dan Q1 (3): kerangka semantik sudah, `<label>` pada setiap input menyusul saat form ada.
 
-Blokir: label Q1 menunggu form Anggota 3 (F3). Aturan label sudah di kontrak, jadi Anggota 3 tidak menunggu Anggota 1. Setelah CORS, data, dan kontrak ada, Anggota 1 tidak memblokir siapa pun.
+Blokir: label Q1 menunggu form @likicop (F3). Aturan label sudah di kontrak, jadi @likicop tidak menunggu @mupinnn. Setelah CORS, data, dan kontrak ada, @mupinnn tidak memblokir siapa pun.
 
-**Anggota 2 — menelusuri jadwal (19).** B1 daftar + pagination + `search` (6). F1 komponen daftar dengan prop `items` saja, dirender dari data yang dimuat saat mount dan dibersihkan saat unmount (6). B2 detail 404 (4). Q2 bisa dioperasikan keyboard dan gaya focus terlihat di CSS global (3).
+**@ghinaat — menelusuri jadwal (19).** B1 daftar + pagination + `search` (6). F1 komponen daftar dengan prop `items` saja, dirender dari data yang dimuat saat mount dan dibersihkan saat unmount (6). B2 detail 404 (4). Q2 bisa dioperasikan keyboard dan gaya focus terlihat di CSS global (3).
 
-Blokir: tidak ada yang menghalangi mulai. Kerjakan B1 dulu supaya barisnya terlihat. Pengecekan keyboard terakhir menunggu form Anggota 3 (F3) dan dialog hapus Anggota 4 (F4). Kamu memblokir integrasi keadaan data Anggota 4 sampai komponen daftar ada, dan memblokir cek keadaan kosong/data sampai B1 mengembalikan baris sungguhan. Kamu tidak memblokir mereka membangun loading, error, atau coba lagi.
+Blokir: tidak ada yang menghalangi mulai. Kerjakan B1 dulu supaya barisnya terlihat. Pengecekan keyboard terakhir menunggu form @likicop (F3) dan dialog hapus @mohammadbaiqi (F4). Kamu memblokir integrasi keadaan data @mohammadbaiqi sampai komponen daftar ada, dan memblokir cek keadaan kosong/data sampai B1 mengembalikan baris sungguhan. Kamu tidak memblokir mereka membangun loading, error, atau coba lagi.
 
-**Anggota 3 — menambah jadwal (19).** B3 buat jadwal, skema masuk dan keluar terpisah, 201 (9). F3 form, validasi klien, tampilan error server (7). Tiap input punya `<label>` sendiri; itu menyelesaikan Q1 Anggota 1. Q3 tidak ada error console dan unhandled rejection (3).
+**@likicop — menambah jadwal (19).** B3 buat jadwal, skema masuk dan keluar terpisah, 201 (9). F3 form, validasi klien, tampilan error server (7). Tiap input punya `<label>` sendiri; itu menyelesaikan Q1 @mupinnn. Q3 tidak ada error console dan unhandled rejection (3).
 
-Blokir: tidak ada yang menghalangi mulai. Tampilkan error server setelah B3 milikmu sendiri jalan. Pengecekan console terakhir menunggu daftar Anggota 2 serta keadaan dan dialog Anggota 4 ada di halaman. Formmu memblokir Anggota 1 menutup Q1, dan memblokir pengecekan keyboard terakhir Anggota 2.
+Blokir: tidak ada yang menghalangi mulai. Tampilkan error server setelah B3 milikmu sendiri jalan. Pengecekan console terakhir menunggu daftar @ghinaat serta keadaan dan dialog @mohammadbaiqi ada di halaman. Formmu memblokir @mupinnn menutup Q1, dan memblokir pengecekan keyboard terakhir @ghinaat.
 
-**Anggota 4 — keadaan layar dan membatalkan jadwal (20).** F2 loading, data, kosong, error, dan tombol coba lagi yang bekerja (11). Kamu yang memanggil API di halaman; keadaan data merender daftar Anggota 2. B4 hapus 204 (4). F4 konfirmasi hapus dan daftar dimuat ulang (3); muat ulang memanggil fungsi load milikmu sendiri. Q4 komponen terpecah, tidak ada berkas lebih dari 100 baris (2).
+**@mohammadbaiqi — keadaan layar dan membatalkan jadwal (20).** F2 loading, data, kosong, error, dan tombol coba lagi yang bekerja (11). Kamu yang memanggil API di halaman; keadaan data merender daftar @ghinaat. B4 hapus 204 (4). F4 konfirmasi hapus dan daftar dimuat ulang (3); muat ulang memanggil fungsi load milikmu sendiri. Q4 komponen terpecah, tidak ada berkas lebih dari 100 baris (2).
 
-Blokir: loading, error, coba lagi, hapus, dan dialog konfirmasi tidak menunggu siapa pun. Cek keadaan kosong dan data menunggu B1 (Anggota 2). Mengganti `<ul>` biasa dengan komponen Anggota 2 menunggu F1. Dialogmu memblokir pengecekan keyboard terakhir Anggota 2. Kamu tidak memblokir Anggota 2 atau Anggota 3 untuk mulai.
+Blokir: loading, error, coba lagi, hapus, dan dialog konfirmasi tidak menunggu siapa pun. Cek keadaan kosong dan data menunggu B1 (@ghinaat). Mengganti `<ul>` biasa dengan komponen @ghinaat menunggu F1. Dialogmu memblokir pengecekan keyboard terakhir @ghinaat. Kamu tidak memblokir @ghinaat atau @likicop untuk mulai.
 
 **Semua anggota — Q5 (2).** Tiap orang commit bagiannya sendiri. Repo butuh minimal tiga commit yang pesannya bermakna. Ini tidak menunggu siapa pun.
 
