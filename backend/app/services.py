@@ -14,3 +14,11 @@ def create_consultation(payload: ConsultationCreate) -> dict:
     new_row = {"id": new_id, **payload.model_dump()}
     CONSULTATIONS.append(new_row)
     return new_row
+
+
+def delete_consultation(consultation_id: int):
+    for index, consultation in enumerate(CONSULTATIONS):
+        if consultation["id"] == consultation_id:
+            return CONSULTATIONS.pop(index)
+
+    return None
