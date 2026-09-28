@@ -1,10 +1,13 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from app.data import CONSULTATIONS
 from app.response import success_response, error_response
 from app.services import (delete_consultation)
 
+
+from app.schemas import Consultation, ConsultationCreate
+from app.services import create_consultation
 
 app = FastAPI(title="Jadwal Konsultasi Klinik")
 
@@ -21,6 +24,11 @@ app.add_middleware(
 @app.get("/health")
 def get_health():
     return {"status": "ok"}
+
+
+@app.post("/consultations", response_model=Consultation, status_code=status.HTTP_201_CREATED)
+def post_consultation(payload: ConsultationCreate):
+    return create_consultation(payload)
 
 
 # delete consultation

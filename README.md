@@ -269,6 +269,7 @@ nilainya 0.
 
 - Pondasi UTS Kelompok 02 (kerangka backend dan frontend, kontrak, CORS, 12 baris data) disusun dengan bantuan AI assistant sebelum Sesi 8. Route konsultasi dan UI fitur belum ditulis; itu tugas anggota sesuai bagian pembagian di bawah.
 
+- Persiapan UTS, bagian B3 dan F3: Claude membantu menulis draf kode dan menjelaskannya.
 ## Kalau kamu tersendat
 
 Tersendat di satu sesi tidak menghapus nilai sesi lain — **berhenti total yang menghapusnya**.
