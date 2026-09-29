@@ -23,7 +23,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-@app.get("/consultations", response_model=list[Consultation])
+@app.get("/consultations")
 def get_consultations(
     skip: int = Query(default=0, ge=0),
     limit: int = Query(default=5, ge=1, le=100),
@@ -37,12 +37,17 @@ def get_consultation_by_id(id: int):
     consultation = get_consultation(id)
 
     if consultation is None:
-        raise HTTPException(
+        return JSONResponse(
             status_code=404,
-            detail="Jadwal konsultasi tidak ditemukan.",
+            content=error_response(
+                "Konsultasi tidak ditemukan"
+            )
         )
 
-    return consultation
+    return success_response(
+            "Konsultasi ditemukan",
+            consultation
+        )
 
 
 @app.get("/health")

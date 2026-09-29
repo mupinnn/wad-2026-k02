@@ -42,7 +42,8 @@ async function loadConsultations() {
       { signal: controller.signal },
     );
     if (!response.ok) throw new Error("Gagal memuat jadwal konsultasi.");
-    items.value = (await response.json()) as Consultation[];
+        const body = (await response.json()) as { data: Consultation[] };     
+        items.value = body.data;
   } catch (cause) {
     if (cause instanceof Error && cause.name !== "AbortError") {
       error.value = cause.message || "Tidak bisa menghubungi server.";

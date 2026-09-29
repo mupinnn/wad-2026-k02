@@ -7,6 +7,7 @@ docs/uts-consultation-contract.md. Jangan mengubah fungsi milik anggota lain.
 from datetime import datetime, timezone
 
 from app.data import CONSULTATIONS
+from app.response import success_response
 from app.schemas import ConsultationCreate
 
 
@@ -42,11 +43,14 @@ def list_consultations(
         reverse=True,
     )
 
-    return rows[skip : skip + limit]
+    return success_response(
+        "Daftar konsultasi berhasil diambil",
+        rows[skip : skip + limit],
+    )
 
 
 def get_consultation(consultation_id: int) -> dict | None:
-    return next(
+    return next(        
         (row for row in CONSULTATIONS if row["id"] == consultation_id),
         None,
     )
