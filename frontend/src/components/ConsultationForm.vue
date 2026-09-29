@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { reactive, ref } from "vue";
+import { useFetch } from "../composables/useFetch";
 
 const emit = defineEmits<{ created: [] }>();
 
@@ -12,8 +13,16 @@ const form = reactive({
 });
 
 const clientError = ref("");
-const serverError = ref("");
-const submitting = ref(false);
+
+const { loading: submitting, error: serverError, execute } = useFetch({
+  url: "/consultations",
+  method: "POST",
+  immediate: false,
+  body: () => ({
+    ...form,
+    waktu_konsultasi: new Date(form.waktu_konsultasi).toISOString(),
+  }),
+});
 
 function isLengkap() {
   return Object.values(form).every((v) => v.trim() !== "");
@@ -21,39 +30,18 @@ function isLengkap() {
 
 async function onSubmit() {
   clientError.value = "";
-  serverError.value = "";
+  serverError.value = null;
 
   if (!isLengkap()) {
     clientError.value = "Semua kolom wajib diisi.";
     return;
   }
 
-  submitting.value = true;
-  try {
-    const res = await fetch("http://localhost:8000/consultations", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        ...form,
-        waktu_konsultasi: new Date(form.waktu_konsultasi).toISOString(),
-      }),
-    });
+  await execute();
+  if (serverError.value) return;
 
-    if (!res.ok) {
-      const body = await res.json().catch(() => null);
-      serverError.value = body?.detail
-        ? JSON.stringify(body.detail)
-        : "Gagal menyimpan jadwal.";
-      return;
-    }
-
-    Object.keys(form).forEach((k) => (form[k as keyof typeof form] = ""));
-    emit("created");
-  } catch {
-    serverError.value = "Tidak bisa menghubungi server.";
-  } finally {
-    submitting.value = false;
-  }
+  Object.keys(form).forEach((k) => (form[k as keyof typeof form] = ""));
+  emit("created");
 }
 </script>
 
