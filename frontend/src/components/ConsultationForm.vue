@@ -13,6 +13,7 @@ const form = reactive({
 
 const clientError = ref("");
 const serverError = ref("");
+const successMessage = ref("");
 const submitting = ref(false);
 
 function isLengkap() {
@@ -22,6 +23,7 @@ function isLengkap() {
 async function onSubmit() {
   clientError.value = "";
   serverError.value = "";
+  successMessage.value = "";
 
   if (!isLengkap()) {
     clientError.value = "Semua kolom wajib diisi.";
@@ -39,14 +41,16 @@ async function onSubmit() {
       }),
     });
 
+    const body = await res.json().catch(() => null);
+
     if (!res.ok) {
-      const body = await res.json().catch(() => null);
       serverError.value = body?.detail
         ? JSON.stringify(body.detail)
         : "Gagal menyimpan jadwal.";
       return;
     }
 
+    successMessage.value = body?.message ?? "Jadwal berhasil ditambahkan.";
     Object.keys(form).forEach((k) => (form[k as keyof typeof form] = ""));
     emit("created");
   } catch {
@@ -110,6 +114,7 @@ async function onSubmit() {
 
     <p v-if="clientError" class="text-sm text-red-600">{{ clientError }}</p>
     <p v-if="serverError" class="text-sm text-red-600">{{ serverError }}</p>
+    <p v-if="successMessage" class="text-sm text-green-600">{{ successMessage }}</p>
 
     <button
       type="submit"
