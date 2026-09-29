@@ -76,4 +76,4 @@ def delete_consultations(id: int):
             content=error_response("Konsultasi tidak ditemukan"),
         )
 
-    return success_response("Konsultasi berhasil dihapus", deleted_consultation)
+    return success_response("Konsultasi berhasil dihapus", deleted_consultation)``
