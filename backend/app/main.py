@@ -3,10 +3,6 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from app.response import success_response, error_response
-<<<<<<< HEAD
-from app.schemas import ConsultationCreate
-from app.services import create_consultation, delete_consultation
-=======
 
 from app.schemas import Consultation, ConsultationCreate
 from app.services import (
@@ -15,7 +11,7 @@ from app.services import (
     get_consultation,
     list_consultations,
 )
->>>>>>> origin/main
+
 
 app = FastAPI(title="Jadwal Konsultasi Klinik")
 
@@ -76,4 +72,4 @@ def delete_consultations(id: int):
             content=error_response("Konsultasi tidak ditemukan"),
         )
 
-    return success_response("Konsultasi berhasil dihapus", deleted_consultation)``
+    return success_response("Konsultasi berhasil dihapus", deleted_consultation)
