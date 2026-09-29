@@ -50,8 +50,8 @@ async function loadConsultations() {
     }
   } finally {
     if (activeRequest === controller) {
-      loading.value = false;
-      activeRequest = null;
+        loading.value = false;
+    activeRequest = null;
     }
   }
 }
@@ -145,11 +145,10 @@ onUnmounted(() => activeRequest?.abort());
           </button>
         </form>
 
-        <p v-if="loading" class="rounded-xl border bg-white p-6 text-sm text-neutral-600" role="status">
-          Memuat jadwal...
-        </p>
-        <div v-else-if="error" class="rounded-xl border border-red-200 bg-white p-6" role="alert">
+        <div v-if="error" class="rounded-xl border border-red-200 bg-white p-6" role="alert"
+        >
           <p class="text-sm text-red-700">{{ error }}</p>
+
           <button
             type="button"
             class="mt-3 rounded-lg border px-4 py-2 text-sm font-medium hover:bg-neutral-50"
@@ -158,10 +157,13 @@ onUnmounted(() => activeRequest?.abort());
             Coba lagi
           </button>
         </div>
-        <p v-else-if="items.length === 0" class="rounded-xl border bg-white p-6 text-sm text-neutral-600">
-          Belum ada jadwal yang cocok.
-        </p>
-        <ConsultationList v-else :items="items" @delete="deleteConsultation" />
+
+        <ConsultationList
+          v-else
+          :items="items"
+          :loading="loading"
+          @delete="deleteConsultation"
+        />
 
         <nav v-if="!loading && !error && items.length > 0" class="flex items-center justify-between" aria-label="Pagination">
           <button
