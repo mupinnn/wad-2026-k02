@@ -6,15 +6,7 @@ import {
   EmptyHeader,
   EmptyTitle,
 } from "@/components/ui/empty";
-
-interface Consultation {
-  id: number;
-  nama_pasien: string;
-  nama_dokter: string;
-  poli: string;
-  waktu_konsultasi: string;
-  keluhan: string;
-}
+import { Consultation } from "@/interface/ConsultationInterface";
 
 defineProps<{
   items: Consultation[];

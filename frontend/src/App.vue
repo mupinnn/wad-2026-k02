@@ -3,15 +3,7 @@ import { computed, ref } from "vue";
 import ConsultationForm from "./components/ConsultationForm.vue";
 import ConsultationList from "./components/ConsultationList.vue";
 import { useFetch } from "./composables/useFetch";
-
-interface Consultation {
-  id: number;
-  nama_pasien: string;
-  nama_dokter: string;
-  poli: string;
-  waktu_konsultasi: string;
-  keluhan: string;
-}
+import { Consultation } from "./interface/ConsultationInterface.js";
 
 const searchInput = ref("");
 const search = ref("");
