@@ -1,10 +1,21 @@
-from fastapi import FastAPI, status
+from fastapi import FastAPI, HTTPException, Query, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from app.response import success_response, error_response
+<<<<<<< HEAD
 from app.schemas import ConsultationCreate
 from app.services import create_consultation, delete_consultation
+=======
+
+from app.schemas import Consultation, ConsultationCreate
+from app.services import (
+    create_consultation,
+    delete_consultation,
+    get_consultation,
+    list_consultations,
+)
+>>>>>>> origin/main
 
 app = FastAPI(title="Jadwal Konsultasi Klinik")
 
@@ -16,6 +27,32 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+@app.get("/consultations")
+def get_consultations(
+    skip: int = Query(default=0, ge=0),
+    limit: int = Query(default=5, ge=1, le=100),
+    search: str | None = Query(default=None),
+):
+    return list_consultations(skip=skip, limit=limit, search=search)
+
+
+@app.get("/consultations/{id}", response_model=Consultation)
+def get_consultation_by_id(id: int):
+    consultation = get_consultation(id)
+
+    if consultation is None:
+        return JSONResponse(
+            status_code=404,
+            content=error_response(
+                "Konsultasi tidak ditemukan"
+            )
+        )
+
+    return success_response(
+            "Konsultasi ditemukan",
+            consultation
+        )
 
 
 @app.get("/health")
