@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { reactive, ref } from "vue";
+import { useFetch } from "../composables/useFetch";
 
 const emit = defineEmits<{ created: [] }>();
 
@@ -12,9 +13,16 @@ const form = reactive({
 });
 
 const clientError = ref("");
-const serverError = ref("");
-const successMessage = ref("");
-const submitting = ref(false);
+
+const { loading: submitting, error: serverError, execute } = useFetch({
+  url: "/consultations",
+  method: "POST",
+  immediate: false,
+  body: () => ({
+    ...form,
+    waktu_konsultasi: new Date(form.waktu_konsultasi).toISOString(),
+  }),
+});
 
 function isLengkap() {
   return Object.values(form).every((v) => v.trim() !== "");
@@ -22,42 +30,18 @@ function isLengkap() {
 
 async function onSubmit() {
   clientError.value = "";
-  serverError.value = "";
-  successMessage.value = "";
+  serverError.value = null;
 
   if (!isLengkap()) {
     clientError.value = "Semua kolom wajib diisi.";
     return;
   }
 
-  submitting.value = true;
-  try {
-    const res = await fetch("http://localhost:8000/consultations", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        ...form,
-        waktu_konsultasi: new Date(form.waktu_konsultasi).toISOString(),
-      }),
-    });
+  await execute();
+  if (serverError.value) return;
 
-    const body = await res.json().catch(() => null);
-
-    if (!res.ok) {
-      serverError.value = body?.detail
-        ? JSON.stringify(body.detail)
-        : "Gagal menyimpan jadwal.";
-      return;
-    }
-
-    successMessage.value = body?.message ?? "Jadwal berhasil ditambahkan.";
-    Object.keys(form).forEach((k) => (form[k as keyof typeof form] = ""));
-    emit("created");
-  } catch {
-    serverError.value = "Tidak bisa menghubungi server.";
-  } finally {
-    submitting.value = false;
-  }
+  Object.keys(form).forEach((k) => (form[k as keyof typeof form] = ""));
+  emit("created");
 }
 </script>
 
@@ -114,7 +98,6 @@ async function onSubmit() {
 
     <p v-if="clientError" class="text-sm text-red-600">{{ clientError }}</p>
     <p v-if="serverError" class="text-sm text-red-600">{{ serverError }}</p>
-    <p v-if="successMessage" class="text-sm text-green-600">{{ successMessage }}</p>
 
     <button
       type="submit"

@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { onMounted, onUnmounted, ref } from "vue";
+import { computed, ref } from "vue";
 import ConsultationForm from "./components/ConsultationForm.vue";
 import ConsultationList from "./components/ConsultationList.vue";
+import { useFetch } from "./composables/useFetch";
 
 interface Consultation {
   id: number;
@@ -12,92 +13,63 @@ interface Consultation {
   keluhan: string;
 }
 
-const items = ref<Consultation[]>([]);
 const searchInput = ref("");
 const search = ref("");
 const skip = ref(0);
 const limit = 5;
-const loading = ref(false);
-const error = ref("");
-const actionError = ref("");
 const showForm = ref(false);
-let activeRequest: AbortController | null = null;
+const deleteId = ref(0);
 
-async function loadConsultations() {
-  activeRequest?.abort();
-  const controller = new AbortController();
-  activeRequest = controller;
-  loading.value = true;
-  error.value = "";
-
+function listQuery() {
   const params = new URLSearchParams({
     skip: String(skip.value),
     limit: String(limit),
   });
   if (search.value) params.set("search", search.value);
-
-  try {
-    const response = await fetch(
-      `http://localhost:8000/consultations?${params.toString()}`,
-      { signal: controller.signal },
-    );
-    if (!response.ok) throw new Error("Gagal memuat jadwal konsultasi.");
-        const body = (await response.json()) as { data: Consultation[] };     
-        items.value = body.data;
-  } catch (cause) {
-    if (cause instanceof Error && cause.name !== "AbortError") {
-      error.value = cause.message || "Tidak bisa menghubungi server.";
-    }
-  } finally {
-    if (activeRequest === controller) {
-        loading.value = false;
-    activeRequest = null;
-    }
-  }
+  return `/consultations?${params.toString()}`;
 }
+
+const { data, loading, error, execute } = useFetch<{ data: Consultation[] }>({
+  url: listQuery,
+  method: "GET",
+});
+
+const items = computed(() => data.value?.data ?? []);
+
+const { error: actionError, execute: remove } = useFetch({
+  url: () => `/consultations/${deleteId.value}`,
+  method: "DELETE",
+  immediate: false,
+});
 
 function submitSearch() {
   search.value = searchInput.value.trim();
   skip.value = 0;
-  void loadConsultations();
+  void execute();
 }
 
 function changePage(offset: number) {
   skip.value = Math.max(0, skip.value + offset);
-  void loadConsultations();
+  void execute();
 }
 
 function refreshAfterCreate() {
   showForm.value = false;
-  void loadConsultations();
+  void execute();
 }
 
 async function deleteConsultation(id: number) {
   if (!window.confirm("Yakin ingin menghapus jadwal konsultasi ini?")) return;
 
-  actionError.value = "";
-  try {
-    const response = await fetch(`http://localhost:8000/consultations/${id}`, {
-      method: "DELETE",
-    });
-    if (!response.ok) {
-      const body = await response.json().catch(() => null);
-      throw new Error(body?.detail || body?.message || "Gagal menghapus jadwal.");
-    }
+  deleteId.value = id;
+  await remove();
+  if (actionError.value) return;
 
-    if (items.value.length === 1 && skip.value > 0) {
-      skip.value = Math.max(0, skip.value - limit);
-    }
-    await loadConsultations();
-  } catch (cause) {
-    actionError.value = cause instanceof Error
-      ? cause.message
-      : "Tidak bisa menghubungi server.";
+  if (items.value.length === 1 && skip.value > 0) {
+    skip.value = Math.max(0, skip.value - limit);
   }
+  await execute();
 }
-
-onMounted(() => void loadConsultations());
-onUnmounted(() => activeRequest?.abort());
 </script>
 
 <template>
@@ -152,7 +124,7 @@ onUnmounted(() => activeRequest?.abort());
           <button
             type="button"
             class="mt-3 rounded-lg border px-4 py-2 text-sm font-medium hover:bg-neutral-50"
-            @click="loadConsultations"
+            @click="execute"
           >
             Coba lagi
           </button>
