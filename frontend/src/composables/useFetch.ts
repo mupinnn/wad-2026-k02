@@ -1,21 +1,5 @@
-import { onScopeDispose, ref, toValue, type MaybeRefOrGetter, type Ref } from "vue";
-
-type HttpMethod = "GET" | "POST" | "DELETE";
-
-interface UseFetchOptions {
-  url: MaybeRefOrGetter<string>;
-  method?: HttpMethod;
-  body?: MaybeRefOrGetter<unknown>;
-  immediate?: boolean;
-  config?: RequestInit;
-}
-
-interface UseFetchReturn<T> {
-  data: Ref<T | null>;
-  loading: Ref<boolean>;
-  error: Ref<string | null>;
-  execute: () => Promise<void>;
-}
+import { onScopeDispose, ref, toValue, type Ref } from "vue";
+import type { UseFetchOptions, UseFetchReturn} from "@/interface/useFetchInterface";
 
 const FALLBACK_HTTP = "Permintaan gagal.";
 const FALLBACK_NETWORK = "Tidak bisa menghubungi server.";
