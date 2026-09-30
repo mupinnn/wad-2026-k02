@@ -1,5 +1,5 @@
 import { onScopeDispose, ref, toValue, type Ref } from "vue";
-import { UseFetchOptions, UseFetchReturn} from "@/interface/useFetchInterface";
+import type { UseFetchOptions, UseFetchReturn} from "@/interface/useFetchInterface";
 
 const FALLBACK_HTTP = "Permintaan gagal.";
 const FALLBACK_NETWORK = "Tidak bisa menghubungi server.";
