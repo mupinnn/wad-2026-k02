@@ -4,7 +4,7 @@ from fastapi.responses import JSONResponse
 
 from app.response import success_response, error_response
 
-from app.schemas import Consultation, ConsultationCreate
+from app.schemas import ConsultationCreate
 from app.services import (
     create_consultation,
     delete_consultation,
@@ -33,7 +33,7 @@ def get_consultations(
     return list_consultations(skip=skip, limit=limit, search=search)
 
 
-@app.get("/consultations/{id}", response_model=Consultation)
+@app.get("/consultations/{id}")
 def get_consultation_by_id(id: int):
     consultation = get_consultation(id)
 

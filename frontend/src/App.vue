@@ -1,7 +1,16 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
+import ConsultationDetailDialog from "./components/ConsultationDetailDialog.vue";
 import ConsultationForm from "./components/ConsultationForm.vue";
 import ConsultationList from "./components/ConsultationList.vue";
+import DeleteConsultationDialog from "./components/DeleteConsultationDialog.vue";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { useFetch } from "./composables/useFetch";
 
 interface Consultation {
@@ -18,7 +27,16 @@ const search = ref("");
 const skip = ref(0);
 const limit = 5;
 const showForm = ref(false);
+const selectedId = ref<number | null>(null);
+const deleteOpen = ref(false);
 const deleteId = ref(0);
+
+const detailOpen = computed({
+  get: () => selectedId.value !== null,
+  set: (value: boolean) => {
+    if (!value) selectedId.value = null;
+  },
+});
 
 function listQuery() {
   const params = new URLSearchParams({
@@ -58,10 +76,16 @@ function refreshAfterCreate() {
   void execute();
 }
 
-async function deleteConsultation(id: number) {
-  if (!window.confirm("Yakin ingin menghapus jadwal konsultasi ini?")) return;
+function openDetail(id: number) {
+  selectedId.value = id;
+}
 
+function requestDelete(id: number) {
   deleteId.value = id;
+  deleteOpen.value = true;
+}
+
+async function confirmDelete() {
   await remove();
   if (actionError.value) return;
 
@@ -82,12 +106,19 @@ async function deleteConsultation(id: number) {
         <button
           type="button"
           class="rounded-xl bg-neutral-900 px-5 py-3 text-sm font-medium text-white hover:bg-neutral-700"
-          :aria-expanded="showForm"
-          @click="showForm = !showForm"
+          @click="showForm = true"
         >
-          {{ showForm ? "Tutup formulir" : "Tambah jadwal" }}
+          Tambah jadwal
         </button>
-        <ConsultationForm v-if="showForm" @created="refreshAfterCreate" />
+        <Dialog v-model:open="showForm">
+          <DialogContent class="max-h-[calc(100vh-2rem)] overflow-y-auto sm:max-w-lg">
+            <DialogHeader>
+              <DialogTitle>Tambah jadwal</DialogTitle>
+              <DialogDescription>Isi data jadwal konsultasi baru.</DialogDescription>
+            </DialogHeader>
+            <ConsultationForm @created="refreshAfterCreate" />
+          </DialogContent>
+        </Dialog>
       </section>
 
       <section aria-labelledby="list-heading" class="space-y-5">
@@ -134,8 +165,12 @@ async function deleteConsultation(id: number) {
           v-else
           :items="items"
           :loading="loading"
-          @delete="deleteConsultation"
+          @select="openDetail"
+          @delete="requestDelete"
         />
+
+        <ConsultationDetailDialog v-model:open="detailOpen" :id="selectedId" />
+        <DeleteConsultationDialog v-model:open="deleteOpen" @confirm="confirmDelete" />
 
         <nav v-if="!loading && !error && items.length > 0" class="flex items-center justify-between" aria-label="Pagination">
           <button
