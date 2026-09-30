@@ -36,16 +36,9 @@ function formatWaktu(value: string) {
 
 <template>
   <!-- Loading Skeleton -->
-  <ul
-    v-if="loading"
-    class="space-y-4"
-    aria-label="Memuat jadwal konsultasi"
-    aria-busy="true"
-  >
+  <ul v-if="loading" class="space-y-4" aria-label="Memuat jadwal konsultasi" aria-busy="true">
     <li v-for="n in 5" :key="n">
-      <article
-        class="rounded-2xl border border-neutral-200 bg-white p-5 shadow-sm"
-      >
+      <article class="rounded-2xl border border-neutral-200 bg-white p-5 shadow-sm">
         <div class="flex items-center justify-between gap-3">
           <div class="space-y-2">
             <Skeleton class="h-6 w-40" />
@@ -73,20 +66,13 @@ function formatWaktu(value: string) {
   </Empty>
 
   <!-- Daftar Konsultasi -->
-  <ul
-    v-else
-    class="space-y-4"
-    aria-label="Daftar jadwal konsultasi"
-  >
+  <ul v-else class="space-y-4" aria-label="Daftar jadwal konsultasi">
     <li v-for="item in items" :key="item.id">
       <article
-        class="flex items-center justify-between gap-3 rounded-2xl border border-neutral-200 bg-white p-5 shadow-sm"
-      >
-        <button
-          type="button"
-          class="min-w-0 flex-1 rounded-lg text-left outline-none focus-visible:ring-2 focus-visible:ring-neutral-400"
-          @click="emit('select', item.id)"
-        >
+        class="flex items-center justify-between gap-3 rounded-2xl border border-neutral-200 bg-white p-5 shadow-sm">
+        <button type="button"
+          class="min-w-0 flex-1 cursor-pointer rounded-lg text-left outline-none focus-visible:ring-2 focus-visible:ring-neutral-400"
+          @click="emit('select', item.id)">
           <h2 class="text-lg font-semibold">
             {{ item.nama_pasien }}
           </h2>
@@ -95,20 +81,14 @@ function formatWaktu(value: string) {
             {{ item.nama_dokter }}
           </p>
 
-          <time
-            class="mt-1 block text-sm text-neutral-500"
-            :datetime="item.waktu_konsultasi"
-          >
+          <time class="mt-1 block text-sm text-neutral-500" :datetime="item.waktu_konsultasi">
             {{ formatWaktu(item.waktu_konsultasi) }}
           </time>
         </button>
 
-        <button
-          type="button"
+        <button type="button"
           class="shrink-0 rounded-lg border border-red-200 px-4 py-2 text-sm font-medium text-red-700 hover:bg-red-50 focus-visible:ring-2 focus-visible:ring-red-300 focus-visible:outline-none"
-          :aria-label="`Hapus jadwal ${item.nama_pasien}`"
-          @click.stop="emit('delete', item.id)"
-        >
+          :aria-label="`Hapus jadwal ${item.nama_pasien}`" @click.stop="emit('delete', item.id)">
           Hapus
         </button>
       </article>
