@@ -6,7 +6,7 @@ import {
   EmptyHeader,
   EmptyTitle,
 } from "@/components/ui/empty";
-import { Consultation } from "@/interface/ConsultationInterface";
+import type { Consultation } from "@/interface/ConsultationInterface";
 
 defineProps<{
   items: Consultation[];
