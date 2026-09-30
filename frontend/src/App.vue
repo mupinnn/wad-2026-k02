@@ -4,7 +4,7 @@ import ConsultationForm from "./components/ConsultationForm.vue";
 import ConsultationList from "./components/ConsultationList.vue";
 import { useFetch } from "./composables/useFetch";
 import { Consultation } from "./interface/ConsultationInterface.js";
-
+  
 const searchInput = ref("");
 const search = ref("");
 const skip = ref(0);

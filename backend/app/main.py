@@ -1,7 +1,7 @@
 from fastapi import FastAPI, HTTPException, Query, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-from app.data import CONSULTATIONS
+
 from app.response import success_response, error_response
 
 from app.schemas import Consultation, ConsultationCreate
@@ -11,6 +11,7 @@ from app.services import (
     get_consultation,
     list_consultations,
 )
+
 
 app = FastAPI(title="Jadwal Konsultasi Klinik")
 
@@ -55,12 +56,12 @@ def get_health():
     return {"status": "ok"}
 
 
-@app.post("/consultations", response_model=Consultation, status_code=status.HTTP_201_CREATED)
+@app.post("/consultations", status_code=status.HTTP_201_CREATED)
 def post_consultation(payload: ConsultationCreate):
-    return create_consultation(payload)
+    new_consultation = create_consultation(payload)
+    return success_response("Konsultasi berhasil ditambahkan", new_consultation)
 
 
-# delete consultation
 @app.delete("/consultations/{id}")
 def delete_consultations(id: int):
     deleted_consultation = delete_consultation(id)
@@ -68,12 +69,7 @@ def delete_consultations(id: int):
     if deleted_consultation is None:
         return JSONResponse(
             status_code=404,
-            content=error_response(
-                "Konsultasi tidak ditemukan"
-            )
+            content=error_response("Konsultasi tidak ditemukan"),
         )
 
-    return success_response(
-        "Konsultasi berhasil dihapus",
-        deleted_consultation
-    )
+    return success_response("Konsultasi berhasil dihapus", deleted_consultation)
