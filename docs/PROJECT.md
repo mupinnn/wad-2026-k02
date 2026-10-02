@@ -16,12 +16,13 @@ Commit berkas ini dalam PR `feature/kerangka` yang sama dengan artefak Sesi 2.
 
 **A1 · Domain.** Aplikasi ini untuk siapa, mengurus apa. Satu kalimat.
 
-> `<contoh: Aplikasi pencatatan kunjungan pasien untuk klinik kecil.>`
+**Aplikasi untuk petugas pendaftaran rumah sakit dalam mencatat dan mengelola jadwal konsultasi pasien dengan dokter.**
 
 **A2 · Alur inti.** Siapa melakukan apa, lalu melihat apa. Satu kalimat. Inilah yang akan kamu
 demokan selama 90 detik di Sesi 15.
 
-> `<contoh: Petugas login, mencatat satu kunjungan pasien, lalu melihat grafik kunjungan per bulan.>`
+Petugas akan mendaftarkan jadwal konsultasi pasien dengan Poli dan Dokter terkait sesuai dengan kueluhan pasien Petugas mendaftarkan pasien dengan memilih Poli dan Dokter sesuai keluhan, lalu melihat jadwal konsultasi yang tersimpan di daftar jadwal hari itu.
+
 
 **A3 · Entitas induk.** Nama tabel + 4–6 kolom.
 
@@ -127,3 +128,7 @@ commit-nya dari satu orang memicu penyesuaian individu secara otomatis.
 - [ ] Lima pengujian lulus di CI
 - [ ] `CONTRIBUTORS.md` menyebut slice tiap anggota
 - [ ] Pengungkapan AI di README terisi dan mutakhir
+
+
+
+
