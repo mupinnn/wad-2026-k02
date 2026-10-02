@@ -6,8 +6,11 @@ kelas milik anggota lain.
 """
 
 from datetime import datetime
+from typing import Generic, Literal, TypeVar
 
 from pydantic import BaseModel
+
+T = TypeVar("T")
 
 
 class ConsultationCreate(BaseModel):
@@ -24,3 +27,19 @@ class Consultation(ConsultationCreate):
     """Data yang dibalas server. Sama seperti ConsultationCreate, ditambah id."""
 
     id: int
+
+
+class SuccessResponse(BaseModel, Generic[T]):
+    status: Literal["success"]
+    message: str
+    data: T
+
+
+class ErrorResponse(BaseModel):
+    status: Literal["error"]
+    message: str
+    data: None = None
+
+
+class HealthResponse(BaseModel):
+    status: Literal["ok"]

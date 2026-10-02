@@ -46,10 +46,7 @@ async function onSubmit() {
 </script>
 
 <template>
-  <form
-    class="mx-auto max-w-xl space-y-4 rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm"
-    @submit.prevent="onSubmit"
-  >
+  <form class="space-y-4" @submit.prevent="onSubmit">
     <div class="space-y-1.5">
       <label for="nama_pasien" class="text-sm font-medium text-neutral-700">Nama pasien</label>
       <input

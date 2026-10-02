@@ -4,7 +4,13 @@ from fastapi.responses import JSONResponse
 
 from app.response import success_response, error_response
 
-from app.schemas import Consultation, ConsultationCreate
+from app.schemas import (
+    Consultation,
+    ConsultationCreate,
+    ErrorResponse,
+    HealthResponse,
+    SuccessResponse,
+)
 from app.services import (
     create_consultation,
     delete_consultation,
@@ -24,7 +30,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-@app.get("/consultations")
+@app.get("/consultations", response_model=SuccessResponse[list[Consultation]])
 def get_consultations(
     skip: int = Query(default=0, ge=0),
     limit: int = Query(default=5, ge=1, le=100),
@@ -33,7 +39,11 @@ def get_consultations(
     return list_consultations(skip=skip, limit=limit, search=search)
 
 
-@app.get("/consultations/{id}", response_model=Consultation)
+@app.get(
+    "/consultations/{id}",
+    response_model=SuccessResponse[Consultation],
+    responses={404: {"model": ErrorResponse}},
+)
 def get_consultation_by_id(id: int):
     consultation = get_consultation(id)
 
@@ -51,18 +61,26 @@ def get_consultation_by_id(id: int):
         )
 
 
-@app.get("/health")
+@app.get("/health", response_model=HealthResponse)
 def get_health():
     return {"status": "ok"}
 
 
-@app.post("/consultations", status_code=status.HTTP_201_CREATED)
+@app.post(
+    "/consultations",
+    status_code=status.HTTP_201_CREATED,
+    response_model=SuccessResponse[Consultation],
+)
 def post_consultation(payload: ConsultationCreate):
     new_consultation = create_consultation(payload)
     return success_response("Konsultasi berhasil ditambahkan", new_consultation)
 
 
-@app.delete("/consultations/{id}")
+@app.delete(
+    "/consultations/{id}",
+    response_model=SuccessResponse[Consultation],
+    responses={404: {"model": ErrorResponse}},
+)
 def delete_consultations(id: int):
     deleted_consultation = delete_consultation(id)
 
