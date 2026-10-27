@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from app.response import success_response, error_response
+from app.routers import users
 
 from app.schemas import (
     Consultation,
@@ -10,6 +11,8 @@ from app.schemas import (
     ErrorResponse,
     HealthResponse,
     SuccessResponse,
+    userUpdate,
+    adminUserCreate 
 )
 from app.services import (
     create_consultation,
@@ -29,7 +32,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
+app.include_router(users.router) 
 @app.get("/consultations", response_model=SuccessResponse[list[Consultation]])
 def get_consultations(
     skip: int = Query(default=0, ge=0),

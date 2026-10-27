@@ -28,6 +28,21 @@ class Consultation(ConsultationCreate):
 
     id: int
 
+class userUpdate(BaseModel):
+    """Data yang dikirim client saat mengupdate user. Tidak ada id — id dibuat server."""
+
+    username: str | None = None
+    email: str | None = None    
+    password: str | None = None    
+    role: str| None = None    
+
+class adminUserCreate(BaseModel):
+    """Data yang dikirim client saat menambah user. Tidak ada id — id dibuat server."""
+
+    username: str
+    email: str    
+    password: str    
+    role: Literal["user", "admin"]
 
 class SuccessResponse(BaseModel, Generic[T]):
     status: Literal["success"]
