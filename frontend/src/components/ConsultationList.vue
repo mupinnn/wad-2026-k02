@@ -15,6 +15,7 @@ defineProps<{
 
 const emit = defineEmits<{
   select: [id: number];
+  edit: [id: number];
   delete: [id: number];
 }>();
 
@@ -77,6 +78,15 @@ function formatWaktu(value: string) {
             {{ formatWaktu(item.waktu_konsultasi) }}
           </time>
         </button>
+
+          <button
+            type="button"
+            class="rounded-lg border border-neutral-300 px-4 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-100 focus-visible:ring-2 focus-visible:ring-neutral-400 focus-visible:outline-none"
+            :aria-label="`Edit jadwal ${item.nama_pasien}`"
+            @click.stop="emit('edit', item.id)"
+          >
+            Edit
+          </button>
 
         <button type="button"
           class="shrink-0 rounded-lg border border-red-200 px-4 py-2 text-sm font-medium text-red-700 hover:bg-red-50 focus-visible:ring-2 focus-visible:ring-red-300 focus-visible:outline-none"

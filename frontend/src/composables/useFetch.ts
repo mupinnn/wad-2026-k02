@@ -43,14 +43,14 @@ export function useFetch<T>(options: UseFetchOptions): UseFetchReturn<T> {
 
     const method = options.method ?? "GET";
     const headers = new Headers(options.config?.headers);
-    if (method === "POST") headers.set("Content-Type", "application/json");
+    if (method === "POST" || method === "PATCH") headers.set("Content-Type", "application/json");
 
     try {
       const response = await fetch(resolveUrl(toValue(options.url)), {
         ...options.config,
         method,
         headers,
-        body: method === "POST" ? JSON.stringify(toValue(options.body)) : undefined,
+        body: method === "POST" || method === "PATCH" ? JSON.stringify(toValue(options.body)) : undefined,
         signal: controller.signal,
       });
 
