@@ -1,3 +1,8 @@
+from contextlib import asynccontextmanager
+from pathlib import Path
+
+from alembic import command
+from alembic.config import Config
 from fastapi import FastAPI, HTTPException, Query, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
@@ -17,9 +22,29 @@ from app.services import (
     get_consultation,
     list_consultations,
 )
+from app.routers.auth import router as auth_router
+from app.seed import seed
 
 
-app = FastAPI(title="Jadwal Konsultasi Klinik")
+BACKEND_DIR = Path(__file__).resolve().parents[1]
+
+
+def run_migrations() -> None:
+    # Config() tanpa file .ini supaya env.py tidak memanggil fileConfig
+    # (yang mematikan logger uvicorn). URL database diatur env.py dari .env.
+    cfg = Config()
+    cfg.set_main_option("script_location", str(BACKEND_DIR / "alembic"))
+    command.upgrade(cfg, "head")
+
+
+@asynccontextmanager
+async def lifespan(_app: FastAPI):
+    run_migrations()
+    seed()
+    yield
+
+
+app = FastAPI(title="Jadwal Konsultasi Klinik", lifespan=lifespan)
 
 # B5: izinkan hanya origin frontend. Jangan menambah origin lain.
 app.add_middleware(
@@ -29,6 +54,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+app.include_router(auth_router)
+
 
 @app.get("/consultations", response_model=SuccessResponse[list[Consultation]])
 def get_consultations(
