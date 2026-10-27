@@ -1,5 +1,6 @@
 import { onScopeDispose, ref, toValue, type Ref } from "vue";
 import type { UseFetchOptions, UseFetchReturn} from "@/interface/useFetchInterface";
+import { clearToken, token } from "@/composables/useAuth";
 
 const FALLBACK_HTTP = "Permintaan gagal.";
 const FALLBACK_NETWORK = "Tidak bisa menghubungi server.";
@@ -42,21 +43,25 @@ export function useFetch<T>(options: UseFetchOptions): UseFetchReturn<T> {
     error.value = null;
 
     const method = options.method ?? "GET";
+    const hasBody = method === "POST" || method === "PATCH";
     const headers = new Headers(options.config?.headers);
-    if (method === "POST") headers.set("Content-Type", "application/json");
+    if (hasBody) headers.set("Content-Type", "application/json");
+    if (token.value) headers.set("Authorization", `Bearer ${token.value}`);
 
     try {
       const response = await fetch(resolveUrl(toValue(options.url)), {
         ...options.config,
         method,
         headers,
-        body: method === "POST" ? JSON.stringify(toValue(options.body)) : undefined,
+        body: hasBody ? JSON.stringify(toValue(options.body)) : undefined,
         signal: controller.signal,
       });
 
       if (id !== requestId) return;
 
       if (!response.ok) {
+        // token ditolak atau kedaluwarsa: keluar, App.vue akan menampilkan login
+        if (response.status === 401) clearToken();
         const payload = await response.json().catch(() => null);
         error.value = messageFrom(payload) ?? FALLBACK_HTTP;
         data.value = null;
