@@ -7,66 +7,76 @@ docs/uts-consultation-contract.md. Jangan mengubah fungsi milik anggota lain.
 from datetime import datetime, timezone
 
 from app.data import CONSULTATIONS
-from app.response import success_response
-from app.schemas import ConsultationCreate
+from app.response import success_response, error_response
+from app.models import Consultation, User
+from app.schemas import Consultation as ConsultationSchema
+from app.schemas import ConsultationCreate, ConsultationRead, ConsultationUpdate
 
+from sqlalchemy import or_, select
+from sqlalchemy.orm import Session
 
-def _consultation_datetime(value: datetime | str) -> datetime:
-    if isinstance(value, str):
-        value = datetime.fromisoformat(value.replace("Z", "+00:00"))
+def _to_dict(row: Consultation) -> dict:
+    return ConsultationSchema.model_validate(row, from_attributes=True).model_dump(mode="json")
 
-    if value.tzinfo is None:
-        return value.replace(tzinfo=timezone.utc)
-
-    return value.astimezone(timezone.utc)
-
+def can_access(user: User, row: Consultation) -> bool:
+    return user.role == "admin" or row.user_id == user.id
 
 def list_consultations(
+    db: Session,
     skip: int = 0,
     limit: int = 5,
     search: str | None = None,
-) -> list[dict]:
-    rows = CONSULTATIONS
+) -> dict:
+    stmt = select(Consultation)
 
     if search:
-        term = search.casefold()
-        rows = [
-            row
-            for row in rows
-            if term in row["nama_pasien"].casefold()
-            or term in row["nama_dokter"].casefold()
-        ]
+        pattern = f"%{search}%"
+        stmt = stmt.where(
+            or_(
+                Consultation.nama_pasien.ilike(pattern),
+                Consultation.nama_dokter.ilike(pattern),
+            )
+        )
 
-    rows = sorted(
-        rows,
-        key=lambda row: _consultation_datetime(row["waktu_konsultasi"]),
-        reverse=True,
+    stmt = (
+        stmt.order_by(
+            Consultation.waktu_konsultasi.desc(),
+            Consultation.id.desc(),  # tie-breaker
+        )
+        .offset(skip)
+        .limit(limit)
     )
+
+    rows = db.scalars(stmt).all()
 
     return success_response(
         "Daftar konsultasi berhasil diambil",
-        rows[skip : skip + limit],
+        [ConsultationRead.model_validate(r).model_dump(mode="json") for r in rows],
     )
 
 
-def get_consultation(consultation_id: int) -> dict | None:
-    return next(        
-        (row for row in CONSULTATIONS if row["id"] == consultation_id),
-        None,
-    )
+def get_consultation(db: Session, consultation_id: int) -> Consultation | None:
+    return db.get(Consultation, consultation_id)
 
+def create_consultation(db: Session, payload: ConsultationCreate, user_id: int) -> dict:
+    row = Consultation(**payload.model_dump(), user_id=user_id)
+    db.add(row)
+    db.commit()
+    db.refresh(row)
+    return _to_dict(row)
 
-def create_consultation(payload: ConsultationCreate) -> dict:
-    """Simpan jadwal baru. id baru = id terbesar yang ada + 1."""
-    new_id = max((row["id"] for row in CONSULTATIONS), default=0) + 1
-    new_row = {"id": new_id, **payload.model_dump()}
-    CONSULTATIONS.append(new_row)
-    return new_row
+def update_consultation(db: Session, row: Consultation, payload: ConsultationUpdate) -> dict:
+    changes = payload.model_dump(exclude_unset=True, exclude_none=True)
 
+    for key, value in changes.items():
+        setattr(row, key, value)
 
-def delete_consultation(consultation_id: int):
-    for index, consultation in enumerate(CONSULTATIONS):
-        if consultation["id"] == consultation_id:
-            return CONSULTATIONS.pop(index)
+    db.commit()
+    db.refresh(row)
+    return _to_dict(row)
 
-    return None
+def delete_consultation(db: Session, row: Consultation) -> dict:
+    data = _to_dict(row)  # serialisasi SEBELUM dihapus
+    db.delete(row)
+    db.commit()
+    return data

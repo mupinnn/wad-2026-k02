@@ -5,6 +5,8 @@ import ConsultationDetailDialog from "./components/ConsultationDetailDialog.vue"
 import ConsultationForm from "./components/ConsultationForm.vue";
 import ConsultationList from "./components/ConsultationList.vue";
 import DeleteConsultationDialog from "./components/DeleteConsultationDialog.vue";
+import ConsultationEditDialog from "./components/ConsultationEditDialog.vue";
+
 import {
   Dialog,
   DialogContent,
@@ -25,6 +27,7 @@ const selectedId = ref<number | null>(null);
 const deleteOpen = ref(false);
 const deleteId = ref(0);
 const { isLoggedIn, logout } = useAuth();
+const updateOpen = ref(false);
 
 const detailOpen = computed({
   get: () => selectedId.value !== null,
@@ -91,6 +94,13 @@ async function confirmDelete() {
     skip.value = Math.max(0, skip.value - limit);
   }
   await execute();
+}
+
+const editing = ref<Consultation | null>(null);
+
+function openEdit(id: number) {
+  editing.value = items.value.find((c) => c.id === id) ?? null;
+  updateOpen.value = true;
 }
 </script>
 
@@ -177,9 +187,21 @@ async function confirmDelete() {
           :loading="loading"
           @select="openDetail"
           @delete="requestDelete"
+          @edit="openEdit"
         />
 
         <ConsultationDetailDialog v-model:open="detailOpen" :id="selectedId" />
+
+        <Dialog v-model:open="updateOpen">
+          <DialogContent class="max-h-[calc(100vh-2rem)] overflow-y-auto sm:max-w-lg">
+            <DialogHeader>
+              <DialogTitle>Edit jadwal</DialogTitle>
+              <DialogDescription>Edit data jadwal konsultasi.</DialogDescription>
+            </DialogHeader>
+            <ConsultationEditDialog :consultation="editing"  @saved="refreshAfterCreate"/>
+          </DialogContent>
+        </Dialog>
+
         <DeleteConsultationDialog v-model:open="deleteOpen" @confirm="confirmDelete" />
 
         <nav v-if="!loading && !error && items.length > 0" class="flex items-center justify-between" aria-label="Pagination">
