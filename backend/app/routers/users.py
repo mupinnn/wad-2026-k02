@@ -10,12 +10,13 @@ from app.models import User
 from app.deps import get_current_user, require_admin
 from app.response import success_response, error_response
 from app.schemas import UserPublic, UserUpdate, AdminUserCreate
+from app.security import hash_password
 
 
 router = APIRouter(prefix="/users", tags=["users"])
 
 
-def public_user(user):
+def public_user(user: User) -> dict:
     return UserPublic.model_validate(user).model_dump()
 
 
@@ -30,7 +31,7 @@ def update_profile(
     user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    data = payload.model_dump(exclude_unset=True)
+    data = payload.model_dump(exclude_unset=True, exclude_none=True)
 
     if "email" in data:
         data["email"] = data["email"].strip().lower()
@@ -41,7 +42,10 @@ def update_profile(
             )
         )
         if existing:
-            return JSONResponse(409, error_response("Email sudah terdaftar."))
+            return JSONResponse(
+                status_code=409,
+                content=error_response("Email sudah terdaftar."),
+            )
 
     if data.get("password"):
         data["password_hash"] = hash_password(data.pop("password"))
@@ -70,7 +74,10 @@ def create_user(
     email = payload.email.strip().lower()
 
     if db.scalar(select(User).where(User.email == email)):
-        return JSONResponse(409, error_response("Email sudah terdaftar."))
+        return JSONResponse(
+            status_code=409,
+            content=error_response("Email sudah terdaftar."),
+        )
 
     user = User(
         nama=payload.nama,

@@ -6,11 +6,12 @@ kelas milik anggota lain.
 """
 
 from datetime import datetime
-from typing import Generic, Literal, TypeVar
+from typing import Annotated, Generic, Literal, TypeVar
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field, StringConstraints
 
 T = TypeVar("T")
+NonEmptyString = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1)]
 
 class ConsultationRead(BaseModel):
     """DTO untuk membaca jadwal dari database (objek ORM)."""
@@ -41,22 +42,6 @@ class Consultation(ConsultationCreate):
     id: int
     user_id: int
 
-class userUpdate(BaseModel):
-    """Data yang dikirim client saat mengupdate user. Tidak ada id — id dibuat server."""
-
-    username: str | None = None
-    email: str | None = None    
-    password: str | None = None    
-    role: str| None = None    
-
-class adminUserCreate(BaseModel):
-    """Data yang dikirim client saat menambah user. Tidak ada id — id dibuat server."""
-
-    username: str
-    email: str    
-    password: str    
-    role: Literal["user", "admin"]
-
 class SuccessResponse(BaseModel, Generic[T]):
     status: Literal["success"]
     message: str
@@ -78,3 +63,27 @@ class ConsultationUpdate(BaseModel):
     poli: str | None = None
     waktu_konsultasi: datetime | None = None
     keluhan: str | None = None
+
+
+class UserPublic(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    nama: str
+    email: str
+    role: Literal["admin", "user"]
+
+
+class UserUpdate(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    nama: NonEmptyString | None = None
+    email: NonEmptyString | None = None
+    password: str | None = Field(default=None, min_length=1)
+
+
+class AdminUserCreate(BaseModel):
+    nama: NonEmptyString
+    email: NonEmptyString
+    password: str = Field(min_length=1)
+    role: Literal["user", "admin"]
