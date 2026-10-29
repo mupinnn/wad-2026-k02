@@ -1,5 +1,5 @@
 import { type MaybeRefOrGetter, type Ref} from "vue";
-type HttpMethod = "GET" | "POST" | "DELETE";
+type HttpMethod = "GET" | "POST" | "DELETE" | "PATCH";
 
 export interface UseFetchOptions {
   url: MaybeRefOrGetter<string>;
