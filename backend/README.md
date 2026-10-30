@@ -1,6 +1,6 @@
 # backend/
 
-FastAPI untuk jadwal konsultasi pasien (Kelompok 02). Route konsultasi belum ada. Kontrak yang harus diikuti ada di [`docs/uts-consultation-contract.md`](../docs/uts-consultation-contract.md).
+FastAPI untuk jadwal konsultasi pasien (Kelompok 02). Kontrak API ada di [`docs/uts-consultation-contract.md`](../docs/uts-consultation-contract.md).
 
 ```
 backend/
@@ -9,23 +9,22 @@ backend/
 ├── requirements.txt
 └── app/
     ├── __init__.py
-    ├── main.py       # FastAPI, GET /health, CORS untuk http://localhost:5173
+    ├── main.py       # FastAPI routes, GET /health, CORS untuk http://localhost:5173
     ├── config.py     # DATABASE_URL dan kredensial seed dari .env root repo
     ├── database.py   # engine SQLite dan get_db
     ├── models.py     # tabel users dan consultations
     ├── seed.py       # admin, pengguna opsional, dan 12 jadwal
-    ├── data.py       # 12 jadwal fiktif (sumber seed; API masih membaca daftar ini)
+    ├── data.py       # 12 jadwal fiktif yang dimasukkan oleh seed.py ke SQLite
     ├── schemas.py    # skema Pydantic — ditambah pemilik endpoint
     └── services.py   # operasi data — ditambah pemilik endpoint
 ```
 
-Jalankan dari folder ini:
+Jalankan dari folder ini (Windows):
 
 ```bash
 python -m venv venv
-source venv/bin/activate
+venv\Scripts\activate
 pip install -r requirements.txt
-uvicorn app.main:app --reload
 ```
 
 `venv/` tidak di-commit.
@@ -49,6 +48,11 @@ Dari folder `backend/`:
 ```bash
 alembic upgrade head
 python -m app.seed
+uvicorn app.main:app --reload
 ```
+
+Seeder mengisi database SQLite dengan 12 jadwal fiktif dan akun admin dari `.env`.
+Buka `http://127.0.0.1:8000/docs` untuk mencoba API; daftar konsultasi dummy tersedia
+di `GET /consultations`. Autentikasi bearer untuk route `/users` belum diimplementasikan.
 
 Perintah seed boleh dijalankan ulang. Admin dibuat hanya jika email itu belum ada. Dua belas jadwal disalin sekali, selama tabel `consultations` masih kosong, dan `user_id`-nya adalah admin. Kalau `ADMIN_EMAIL` atau `ADMIN_PASSWORD` kosong, seed berhenti dan tidak membuat kata sandi sendiri.

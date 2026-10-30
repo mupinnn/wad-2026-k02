@@ -4,6 +4,7 @@ from fastapi.responses import JSONResponse
 from fastapi import Depends, Query
 
 from app.response import success_response, error_response
+from app.routers import users
 
 from sqlalchemy.orm import Session
 from app.database import get_db
@@ -18,7 +19,9 @@ from app.schemas import (
     ErrorResponse,
     HealthResponse,
     SuccessResponse,
-    ConsultationUpdate
+    ConsultationUpdate,
+    UserUpdate,
+    AdminUserCreate
 )
 from app.services import (
     create_consultation,
@@ -42,8 +45,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+app.include_router(users.router) 
 app.include_router(auth_router)
-
 
 @app.get("/consultations", response_model=SuccessResponse[list[Consultation]])
 def get_consultations(
@@ -159,7 +162,14 @@ def delete_consultations(
         return JSONResponse(
             status_code=403,
             content=error_response("Anda tidak berhak mengakses konsultasi ini"),
-        )
+        )        # backend/app/security.py
+        
+        def decode_token(token: str) -> int:
+            raise NotImplementedError("Authentication is not implemented yet")
+        
+        
+        def hash_password(password: str) -> str:
+            raise NotImplementedError("Password hashing is not implemented yet")
 
     deleted = delete_consultation(db, row)
     return success_response("Konsultasi berhasil dihapus", deleted)

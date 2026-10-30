@@ -6,11 +6,12 @@ kelas milik anggota lain.
 """
 
 from datetime import datetime
-from typing import Generic, Literal, TypeVar
+from typing import Annotated, Generic, Literal, TypeVar
+from pydantic import BaseModel, ConfigDict, Field, field_validator, StringConstraints
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 T = TypeVar("T")
+NonEmptyString = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1)]
 
 class ConsultationRead(BaseModel):
     """DTO untuk membaca jadwal dari database (objek ORM)."""
@@ -41,7 +42,6 @@ class Consultation(ConsultationCreate):
     id: int
     user_id: int
 
-
 class SuccessResponse(BaseModel, Generic[T]):
     status: Literal["success"]
     message: str
@@ -63,7 +63,6 @@ class ConsultationUpdate(BaseModel):
     poli: str | None = None
     waktu_konsultasi: datetime | None = None
     keluhan: str | None = None
-
 
 class RegisterRequest(BaseModel):
     nama: str = Field(min_length=1, max_length=100)
@@ -113,7 +112,21 @@ class UserPublic(BaseModel):
     email: str
     role: Literal["admin", "user"]
 
+class UserUpdate(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    nama: NonEmptyString | None = None
+    email: NonEmptyString | None = None
+    password: str | None = Field(default=None, min_length=1)
+
+
+class AdminUserCreate(BaseModel):
+    nama: NonEmptyString
+    email: NonEmptyString
+    password: str = Field(min_length=1)
+    role: Literal["user", "admin"]
 
 class TokenData(BaseModel):
     access_token: str
     token_type: Literal["bearer"] = "bearer"
+

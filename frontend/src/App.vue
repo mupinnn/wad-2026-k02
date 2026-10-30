@@ -6,6 +6,7 @@ import ConsultationForm from "./components/ConsultationForm.vue";
 import ConsultationList from "./components/ConsultationList.vue";
 import DeleteConsultationDialog from "./components/DeleteConsultationDialog.vue";
 import ConsultationEditDialog from "./components/ConsultationEditDialog.vue";
+import AccountPanel from "./components/AccountPanel.vue";
 
 import {
   Dialog,
@@ -28,6 +29,7 @@ const deleteOpen = ref(false);
 const deleteId = ref(0);
 const { isLoggedIn, logout } = useAuth();
 const updateOpen = ref(false);
+const accessToken = localStorage.getItem("accessToken") ?? "";
 
 const detailOpen = computed({
   get: () => selectedId.value !== null,
@@ -119,6 +121,7 @@ function openEdit(id: number) {
         </button>
       </div>
     </header>
+    
     <main class="mx-auto max-w-5xl space-y-8 px-6 py-8">
       <AuthPanel v-if="!isLoggedIn" />
 
@@ -140,7 +143,7 @@ function openEdit(id: number) {
           </DialogContent>
         </Dialog>
       </section>
-
+      <AccountPanel :access-token="accessToken" />
       <section aria-labelledby="list-heading" class="space-y-5">
         <div>
           <h2 id="list-heading" class="text-xl font-semibold">Daftar jadwal</h2>
