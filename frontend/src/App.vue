@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { computed, ref } from "vue";
+import { computed, ref, watch } from "vue";
+import AuthPanel from "./components/AuthPanel.vue";
 import ConsultationDetailDialog from "./components/ConsultationDetailDialog.vue";
 import ConsultationForm from "./components/ConsultationForm.vue";
 import ConsultationList from "./components/ConsultationList.vue";
@@ -13,9 +14,10 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { useAuth } from "./composables/useAuth";
 import { useFetch } from "./composables/useFetch";
 import type { Consultation } from "./interface/ConsultationInterface.js";
-  
+
 const searchInput = ref("");
 const search = ref("");
 const skip = ref(0);
@@ -24,6 +26,7 @@ const showForm = ref(false);
 const selectedId = ref<number | null>(null);
 const deleteOpen = ref(false);
 const deleteId = ref(0);
+const { isLoggedIn, logout } = useAuth();
 const updateOpen = ref(false);
 
 const detailOpen = computed({
@@ -48,6 +51,9 @@ const { data, loading, error, execute } = useFetch<{ data: Consultation[] }>({
 });
 
 const items = computed(() => data.value?.data ?? []);
+
+// daftar dimuat ulang saat status login berubah (token ikut terkirim)
+watch(isLoggedIn, () => void execute());
 
 const { error: actionError, execute: remove } = useFetch({
   url: () => `/consultations/${deleteId.value}`,
@@ -101,9 +107,21 @@ function openEdit(id: number) {
 <template>
   <div class="min-h-screen bg-neutral-50">
     <header class="border-b bg-white px-6 py-5">
-      <h1 class="mx-auto max-w-5xl text-2xl font-semibold tracking-tight">Jadwal Konsultasi</h1>
+      <div class="mx-auto flex max-w-5xl items-center justify-between">
+        <h1 class="text-2xl font-semibold tracking-tight">Jadwal Konsultasi</h1>
+        <button
+          v-if="isLoggedIn"
+          type="button"
+          class="rounded-lg border px-4 py-2 text-sm font-medium hover:bg-neutral-50"
+          @click="logout"
+        >
+          Keluar
+        </button>
+      </div>
     </header>
     <main class="mx-auto max-w-5xl space-y-8 px-6 py-8">
+      <AuthPanel v-if="!isLoggedIn" />
+
       <section class="space-y-4" aria-label="Tambah jadwal konsultasi">
         <button
           type="button"
