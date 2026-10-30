@@ -30,9 +30,11 @@ from app.services import (
     list_consultations,
     can_access, get_consultation, update_consultation, _to_dict
 )
+from app.routers.auth import router as auth_router
+from app.startup import lifespan
 
 
-app = FastAPI(title="Jadwal Konsultasi Klinik")
+app = FastAPI(title="Jadwal Konsultasi Klinik", lifespan=lifespan)
 
 # B5: izinkan hanya origin frontend. Jangan menambah origin lain.
 app.add_middleware(
@@ -42,7 +44,10 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
 app.include_router(users.router) 
+app.include_router(auth_router)
+
 @app.get("/consultations", response_model=SuccessResponse[list[Consultation]])
 def get_consultations(
     skip: int = Query(default=0, ge=0),
