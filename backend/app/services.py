@@ -1,33 +1,31 @@
-"""Operasi atas daftar konsultasi di app.data.
+"""Operasi jadwal konsultasi di SQLite. Route yang menyimpan dan membungkus respons."""
 
-Belum diisi. Tambahkan fungsi baru di berkas ini sesuai
-docs/uts-consultation-contract.md. Jangan mengubah fungsi milik anggota lain.
-"""
-
-from datetime import datetime, timezone
-
-from app.data import CONSULTATIONS
-from app.response import success_response, error_response
 from app.models import Consultation, User
 from app.schemas import Consultation as ConsultationSchema
-from app.schemas import ConsultationCreate, ConsultationRead, ConsultationUpdate
+from app.schemas import ConsultationCreate, ConsultationUpdate
 
 from sqlalchemy import or_, select
 from sqlalchemy.orm import Session
 
-def _to_dict(row: Consultation) -> dict:
-    return ConsultationSchema.model_validate(row, from_attributes=True).model_dump(mode="json")
+
+def to_dict(row: Consultation) -> dict:
+    return ConsultationSchema.model_validate(row).model_dump(mode="json")
+
 
 def can_access(user: User, row: Consultation) -> bool:
     return user.role == "admin" or row.user_id == user.id
 
+
 def list_consultations(
     db: Session,
+    current_user: User,
     skip: int = 0,
     limit: int = 5,
     search: str | None = None,
-) -> dict:
+) -> list[Consultation]:
     stmt = select(Consultation)
+    if current_user.role != "admin":
+        stmt = stmt.where(Consultation.user_id == current_user.id)
 
     if search:
         pattern = f"%{search}%"
@@ -41,42 +39,31 @@ def list_consultations(
     stmt = (
         stmt.order_by(
             Consultation.waktu_konsultasi.desc(),
-            Consultation.id.desc(),  # tie-breaker
+            Consultation.id.desc(),
         )
         .offset(skip)
         .limit(limit)
     )
-
-    rows = db.scalars(stmt).all()
-
-    return success_response(
-        "Daftar konsultasi berhasil diambil",
-        [ConsultationRead.model_validate(r).model_dump(mode="json") for r in rows],
-    )
+    return list(db.scalars(stmt).all())
 
 
 def get_consultation(db: Session, consultation_id: int) -> Consultation | None:
     return db.get(Consultation, consultation_id)
 
-def create_consultation(db: Session, payload: ConsultationCreate, user_id: int) -> dict:
+
+def create_consultation(db: Session, payload: ConsultationCreate, user_id: int) -> Consultation:
     row = Consultation(**payload.model_dump(), user_id=user_id)
     db.add(row)
-    db.commit()
-    db.refresh(row)
-    return _to_dict(row)
+    return row
 
-def update_consultation(db: Session, row: Consultation, payload: ConsultationUpdate) -> dict:
-    changes = payload.model_dump(exclude_unset=True, exclude_none=True)
 
-    for key, value in changes.items():
+def update_consultation(db: Session, row: Consultation, payload: ConsultationUpdate) -> Consultation:
+    for key, value in payload.model_dump(exclude_unset=True, exclude_none=True).items():
         setattr(row, key, value)
+    return row
 
-    db.commit()
-    db.refresh(row)
-    return _to_dict(row)
 
 def delete_consultation(db: Session, row: Consultation) -> dict:
-    data = _to_dict(row)  # serialisasi SEBELUM dihapus
+    data = to_dict(row)
     db.delete(row)
-    db.commit()
     return data

@@ -29,7 +29,6 @@ const deleteOpen = ref(false);
 const deleteId = ref(0);
 const { isLoggedIn, logout } = useAuth();
 const updateOpen = ref(false);
-const accessToken = localStorage.getItem("accessToken") ?? "";
 
 const detailOpen = computed({
   get: () => selectedId.value !== null,
@@ -50,12 +49,18 @@ function listQuery() {
 const { data, loading, error, execute } = useFetch<{ data: Consultation[] }>({
   url: listQuery,
   method: "GET",
+  immediate: false,
 });
 
 const items = computed(() => data.value?.data ?? []);
 
-// daftar dimuat ulang saat status login berubah (token ikut terkirim)
-watch(isLoggedIn, () => void execute());
+watch(
+  isLoggedIn,
+  (loggedIn) => {
+    if (loggedIn) void execute();
+  },
+  { immediate: true },
+);
 
 const { error: actionError, execute: remove } = useFetch({
   url: () => `/consultations/${deleteId.value}`,
@@ -124,7 +129,7 @@ function openEdit(id: number) {
     
     <main class="mx-auto max-w-5xl space-y-8 px-6 py-8">
       <AuthPanel v-if="!isLoggedIn" />
-
+      <template v-else>
       <section class="space-y-4" aria-label="Tambah jadwal konsultasi">
         <button
           type="button"
@@ -143,7 +148,7 @@ function openEdit(id: number) {
           </DialogContent>
         </Dialog>
       </section>
-      <AccountPanel :access-token="accessToken" />
+      <AccountPanel />
       <section aria-labelledby="list-heading" class="space-y-5">
         <div>
           <h2 id="list-heading" class="text-xl font-semibold">Daftar jadwal</h2>
@@ -227,6 +232,7 @@ function openEdit(id: number) {
           </button>
         </nav>
       </section>
+      </template>
     </main>
   </div>
 </template>

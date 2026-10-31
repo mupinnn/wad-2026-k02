@@ -13,18 +13,20 @@ from pydantic import BaseModel, ConfigDict, Field, field_validator, StringConstr
 T = TypeVar("T")
 NonEmptyString = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1)]
 
-class ConsultationRead(BaseModel):
-    """DTO untuk membaca jadwal dari database (objek ORM)."""
 
-    model_config = ConfigDict(from_attributes=True)
+def normalize_email(value: str) -> str:
+    value = value.strip().lower()
+    local, _, domain = value.partition("@")
+    if not local or "." not in domain:
+        raise ValueError("Format email tidak valid.")
+    return value
 
-    id: int
-    nama_pasien: str
-    nama_dokter: str
-    poli: str
-    waktu_konsultasi: datetime
-    keluhan: str
-    user_id: int
+
+def limit_password_bytes(value: str) -> str:
+    if len(value.encode("utf-8")) > 72:
+        raise ValueError("Kata sandi terlalu panjang (maksimal 72 byte).")
+    return value
+
 
 class ConsultationCreate(BaseModel):
     """Data yang dikirim client saat menambah jadwal. Tidak ada id — id dibuat server."""
@@ -38,6 +40,8 @@ class ConsultationCreate(BaseModel):
 
 class Consultation(ConsultationCreate):
     """Data yang dibalas server. Sama seperti ConsultationCreate, ditambah id."""
+
+    model_config = ConfigDict(from_attributes=True)
 
     id: int
     user_id: int
@@ -80,18 +84,12 @@ class RegisterRequest(BaseModel):
     @field_validator("email")
     @classmethod
     def _email_valid(cls, value: str) -> str:
-        value = value.strip().lower()
-        nama, _, domain = value.partition("@")
-        if not nama or "." not in domain:
-            raise ValueError("Format email tidak valid.")
-        return value
+        return normalize_email(value)
 
     @field_validator("password")
     @classmethod
     def _password_maks_72_byte(cls, value: str) -> str:
-        if len(value.encode("utf-8")) > 72:
-            raise ValueError("Kata sandi terlalu panjang (maksimal 72 byte).")
-        return value
+        return limit_password_bytes(value)
 
 
 class LoginRequest(BaseModel):
@@ -117,14 +115,38 @@ class UserUpdate(BaseModel):
 
     nama: NonEmptyString | None = None
     email: NonEmptyString | None = None
-    password: str | None = Field(default=None, min_length=1)
+    password: str | None = Field(default=None, min_length=8, max_length=72)
+
+    @field_validator("email")
+    @classmethod
+    def _email_valid(cls, value: str | None) -> str | None:
+        if value is None:
+            return None
+        return normalize_email(value)
+
+    @field_validator("password")
+    @classmethod
+    def _password_maks_72_byte(cls, value: str | None) -> str | None:
+        if value is None:
+            return None
+        return limit_password_bytes(value)
 
 
 class AdminUserCreate(BaseModel):
     nama: NonEmptyString
     email: NonEmptyString
-    password: str = Field(min_length=1)
+    password: str = Field(min_length=8, max_length=72)
     role: Literal["user", "admin"]
+
+    @field_validator("email")
+    @classmethod
+    def _email_valid(cls, value: str) -> str:
+        return normalize_email(value)
+
+    @field_validator("password")
+    @classmethod
+    def _password_maks_72_byte(cls, value: str) -> str:
+        return limit_password_bytes(value)
 
 class TokenData(BaseModel):
     access_token: str
