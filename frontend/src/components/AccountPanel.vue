@@ -21,12 +21,6 @@ interface AccountForm {
   password: string;
 }
 
-const props = defineProps<{ accessToken: string }>();
-
-const authConfig: RequestInit = {
-  headers: { Authorization: `Bearer ${props.accessToken}` },
-};
-
 const profileForm = reactive<AccountForm>({
   nama: "",
   email: "",
@@ -48,7 +42,6 @@ const {
   execute: loadProfile,
 } = useFetch<ApiResponse<UserProfile>>({
   url: "/users/me",
-  config: authConfig,
 });
 
 const { loading: savingProfile, error: saveError, execute: saveProfile } =
@@ -56,7 +49,6 @@ const { loading: savingProfile, error: saveError, execute: saveProfile } =
     url: "/users/me",
     method: "PATCH",
     immediate: false,
-    config: authConfig,
     body: () => ({
       nama: profileForm.nama.trim(),
       email: profileForm.email.trim().toLowerCase(),
@@ -69,7 +61,6 @@ const { loading: creatingAccount, error: createError, execute: createAccount } =
     url: "/users",
     method: "POST",
     immediate: false,
-    config: authConfig,
     body: () => ({
       nama: createForm.nama.trim(),
       email: createForm.email.trim().toLowerCase(),

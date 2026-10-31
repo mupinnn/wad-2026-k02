@@ -5,4 +5,5 @@ export interface Consultation {
   poli: string;
   waktu_konsultasi: string;
   keluhan: string;
+  user_id: number;
 }

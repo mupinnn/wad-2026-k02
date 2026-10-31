@@ -1,9 +1,7 @@
 import { computed, ref } from "vue";
+import { FALLBACK_HTTP, FALLBACK_NETWORK, messageFrom, resolveUrl } from "@/lib/api";
 
 const TOKEN_KEY = "access_token";
-const BASE = (import.meta.env.VITE_API_BASE || "http://localhost:8000").replace(/\/$/, "");
-const FALLBACK_HTTP = "Permintaan gagal.";
-const FALLBACK_NETWORK = "Tidak bisa menghubungi server.";
 
 function readToken() {
   try {
@@ -13,7 +11,6 @@ function readToken() {
   }
 }
 
-// Dibagi ke seluruh aplikasi: App.vue dan useFetch.ts membaca ref yang sama.
 export const token = ref<string | null>(readToken());
 
 function setToken(value: string | null) {
@@ -30,24 +27,11 @@ export function clearToken() {
   setToken(null);
 }
 
-// Pesan error dari envelope kita ({message}) atau dari validasi FastAPI ({detail}).
-function messageFrom(payload: unknown) {
-  if (!payload || typeof payload !== "object") return null;
-  const { message, detail } = payload as { message?: unknown; detail?: unknown };
-  if (typeof message === "string" && message) return message;
-  if (typeof detail === "string" && detail) return detail;
-  if (Array.isArray(detail)) {
-    const msg = (detail[0] as { msg?: unknown } | undefined)?.msg;
-    if (typeof msg === "string") return msg.replace(/^Value error, /, "");
-  }
-  return null;
-}
-
 type Result<T> = { ok: true; data: T } | { ok: false; message: string };
 
 async function post<T>(path: string, body: unknown): Promise<Result<T>> {
   try {
-    const response = await fetch(`${BASE}${path}`, {
+    const response = await fetch(resolveUrl(path), {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body),
@@ -89,7 +73,6 @@ export function useAuth() {
       error.value = result.message;
       return false;
     }
-    // sesuai issue: setelah register berhasil, langsung login dengan kata sandi yang sama
     return login(email, password);
   }
 

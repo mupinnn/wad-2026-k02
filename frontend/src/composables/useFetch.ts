@@ -1,26 +1,7 @@
 import { onScopeDispose, ref, toValue, type Ref } from "vue";
-import type { UseFetchOptions, UseFetchReturn} from "@/interface/useFetchInterface";
+import type { UseFetchOptions, UseFetchReturn } from "@/interface/useFetchInterface";
+import { FALLBACK_HTTP, FALLBACK_NETWORK, messageFrom, resolveUrl } from "@/lib/api";
 import { clearToken, token } from "@/composables/useAuth";
-
-const FALLBACK_HTTP = "Permintaan gagal.";
-const FALLBACK_NETWORK = "Tidak bisa menghubungi server.";
-
-function resolveUrl(path: string) {
-  const base = import.meta.env.VITE_API_BASE || "http://localhost:8000";
-  const normalizedBase = base.endsWith("/") ? base : `${base}/`;
-  return new URL(path.replace(/^\//, ""), normalizedBase).toString();
-}
-
-// mapping between the error return from FastAPI's validation or our custom structure in `services.py`
-function messageFrom(payload: unknown) {
-  if (!payload || typeof payload !== "object") return null;
-
-  const record = payload as { detail?: unknown; message?: unknown };
-  if (typeof record.detail === "string" && record.detail) return record.detail;
-  if (record.detail != null) return JSON.stringify(record.detail);
-  if (typeof record.message === "string" && record.message) return record.message;
-  return null;
-}
 
 function isAbort(cause: unknown) {
   return cause instanceof Error && cause.name === "AbortError";
@@ -60,7 +41,6 @@ export function useFetch<T>(options: UseFetchOptions): UseFetchReturn<T> {
       if (id !== requestId) return;
 
       if (!response.ok) {
-        // token ditolak atau kedaluwarsa: keluar, App.vue akan menampilkan login
         if (response.status === 401) clearToken();
         const payload = await response.json().catch(() => null);
         error.value = messageFrom(payload) ?? FALLBACK_HTTP;

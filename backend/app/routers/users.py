@@ -60,7 +60,10 @@ def update_profile(
         db.refresh(user)
     except IntegrityError:
         db.rollback()
-        return JSONResponse(409, error_response("Email sudah terdaftar."))
+        return JSONResponse(
+            status_code=409,
+            content=error_response("Email sudah terdaftar."),
+        )
 
     return success_response("Profil berhasil diperbarui", public_user(user))
 
@@ -92,6 +95,9 @@ def create_user(
         db.refresh(user)
     except IntegrityError:
         db.rollback()
-        return JSONResponse(409, error_response("Email sudah terdaftar."))
+        return JSONResponse(
+            status_code=409,
+            content=error_response("Email sudah terdaftar."),
+        )
 
     return success_response("Akun berhasil dibuat", public_user(user))
